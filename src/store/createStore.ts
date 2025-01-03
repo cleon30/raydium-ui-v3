@@ -1,6 +1,8 @@
-import create, { Mutate, StoreApi } from 'zustand'
+import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
+import { StateCreator } from 'zustand/vanilla'
+import { Draft } from 'immer'
 
 const storeResetter: {
   name?: string
@@ -12,61 +14,38 @@ export const resetAllStore = (props?: { [key: string]: Record<string, any> }) =>
   storeResetter.forEach((f) => f.reset(f.name && props ? props[f.name] : undefined))
 }
 
-declare type Get<T, K, F = never> = K extends keyof T ? T[K] : F
+type StoreMiddlewares = [['zustand/devtools', never], ['zustand/immer', never]]
 
-type MiddleWares = [['zustand/devtools', never], ['zustand/immer', never]]
-const createStore = <T>(
-  fn: (
-    setState: Get<Mutate<StoreApi<T>, MiddleWares>, 'setState', undefined>,
-    getState: Get<Mutate<StoreApi<T>, MiddleWares>, 'getState', undefined>,
-    store: Mutate<StoreApi<T>, MiddleWares>,
-    $$storeMutations: MiddleWares
-  ) => T,
+interface ActionType {
+  type: string
+  payload?: any
+}
+
+const createStore = <T extends object>(
+  fn: StateCreator<T, [['zustand/devtools', never], ['zustand/immer', never]], [], T>,
   name?: string
 ) => {
-  const store = create<T, MiddleWares>(
+  const store = create<T>()(
     devtools(
-      immer((set, get, store, $$storeMutations) => {
-        // this function is to add log to redux dev tool
-        const logSet: Get<Mutate<StoreApi<T>, MiddleWares>, 'setState', undefined> = (nextStateOrUpdater, shouldReplace, action) => {
-          let objAct = action || {}
-          objAct = typeof objAct === 'string' ? { type: objAct } : objAct
-          return set(nextStateOrUpdater, shouldReplace, { ...(objAct || { type: 'unknown' }), payload: nextStateOrUpdater } as any)
+      immer((set, get, store) => {
+        const logSet = (nextStateOrUpdater: T | Partial<T> | ((state: Draft<T>) => void), shouldReplace?: boolean, action?: string | ActionType) => {
+          const objAct = typeof action === 'string' ? { type: action } : (action || { type: 'unknown' }) as ActionType
+          return set(nextStateOrUpdater, shouldReplace, objAct)
         }
 
-        return fn(logSet, get, store, $$storeMutations)
-
-        // maybe need while try to catch all tx
-        // const storeState = fn(logSet, get, store, $$storeMutations)
-        // const newState = { ...storeState }
-
-        // /* eslint-disable */
-        // /* @ts-ignore */
-        // Object.keys(newState).forEach((key) => {
-        //   /* @ts-ignore */
-        //   if (typeof newState[key] === 'function') {
-        //     /* @ts-ignore */
-        //     newState[key] = (...props: any) => {
-        //       if (key.indexOf('Act') !== -1) console.log( 'call', key)
-        //       /* @ts-ignore */
-        //       return storeState[key].bind({})(...props)
-        //     }
-        //   }
-        // })
-        // /* eslint-enable */
-        // return newState
+        return fn(logSet, get, store)
       }),
-
-      name ? { name } : undefined
+      { name }
     )
   )
-  const initState = store.getState()
-  storeResetter.push({
-    name,
-    reset: (replaceState?: Record<string, any>) => {
-      store.setState({ ...initState, ...(replaceState || {}) }, true, { type: 'reset' })
-    }
-  })
+
+  const reset = (replaceState?: Record<string, any>) => {
+    const initialState = fn(store.setState, store.getState, store)
+    store.setState({ ...initialState, ...(replaceState || {}) } as T, true)
+  }
+
+  storeResetter.push({ name, reset })
+
   return store
 }
 

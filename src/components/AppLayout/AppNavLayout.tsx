@@ -1,7 +1,6 @@
 import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import RaydiumLogo from '@/icons/RaydiumLogo'
 import RaydiumLogoOutline from '@/icons/RaydiumLogoOutline'
-import ChevronDownIcon from '@/icons/misc/ChevronDownIcon'
 import Gear from '@/icons/misc/Gear'
 import { useAppStore } from '@/store'
 import { colors } from '@/theme/cssVariables'
@@ -10,8 +9,6 @@ import {
   Box,
   Flex,
   HStack,
-  Menu,
-  MenuButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -26,11 +23,9 @@ import React, { ReactNode, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Desktop, Mobile } from '../MobileDesktop'
 import SolWallet from '../SolWallet'
-import { MobileBottomNavbar } from './MobileBottomNavbar'
 import { ColorThemeSettingField } from './components/ColorThemeSettingField'
 import { DefaultExplorerSettingField } from './components/DefaultExplorerSettingField'
 import { LanguageSettingField } from './components/LanguageSettingField'
-import { NavMoreButtonMenuPanel } from './components/NavMoreButtonMenuPanel'
 import { RPCConnectionSettingField } from './components/RPCConnectionSettingField'
 import { Divider } from './components/SettingFieldDivider'
 import { SlippageToleranceSettingField } from './components/SlippageToleranceSettingField'
@@ -67,60 +62,41 @@ function AppNavLayout({
       >
         {/* logo */}
         <Desktop>
-          <Box flex={'none'}>
+          <HStack spacing={8}>
+            <Box flex={'none'}>
+              <Link href="/swap">
+                <RaydiumLogo />
+              </Link>
+            </Box>
             <Link href="/swap">
-              <RaydiumLogo />
+              <Text
+                as="span"
+                textColor={pathname === '/swap' ? colors.textSecondary : colors.textTertiary}
+                fontSize="lg"
+                px={4}
+                py={2}
+                rounded="xl"
+                transition="200ms"
+                _hover={{ bg: colors.backgroundLight, color: colors.textSecondary }}
+              >
+                {t('swap.title')}
+              </Text>
             </Link>
-          </Box>
+          </HStack>
         </Desktop>
         <Mobile>
           <HStack>
             <RaydiumLogoOutline />
             <Text fontSize="xl" fontWeight="medium" color={colors.textSecondary}>
-              {pathname === '/swap'
-                ? t('swap.title')
-                : pathname === '/liquidity-pools'
-                ? t('liquidity.title')
-                : pathname === '/portfolio'
-                ? t('portfolio.title')
-                : pathname === '/playground'
-                ? t('common.playground')
-                : pathname === '/staking'
-                ? t('staking.title')
-                : pathname === '/bridge'
-                ? t('bridge.title')
-                : ''}
+              {t('swap.title')}
             </Text>
           </HStack>
         </Mobile>
-
-        {/* nav routes */}
-        <Desktop>
-          <HStack flexGrow={1} justify="start" overflow={['auto', 'visible']} gap={15}>
-            <RouteLink href="/swap" isActive={pathname === '/swap'} title={t('swap.title')} />
-            <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')} title={t('liquidity.title')} />
-            <RouteLink href="/portfolio" isActive={pathname === '/portfolio'} title={t('portfolio.title')} />
-            <Menu size="lg">
-              <MenuButton fontSize={'lg'} px={4} py={2}>
-                <Flex
-                  align="center"
-                  gap={0.5}
-                  color={pathname === '/staking' || pathname === '/bridge' ? colors.textSecondary : colors.textTertiary}
-                >
-                  {pathname === '/staking' ? t('staking.title') : pathname === '/bridge' ? t('bridge.title') : t('common.more')}
-                  <ChevronDownIcon width={16} height={16} />
-                </Flex>
-              </MenuButton>
-              <NavMoreButtonMenuPanel />
-            </Menu>
-          </HStack>
-        </Desktop>
 
         {/* wallet button */}
         <Flex gap={[0.5, 2]} align="center">
           <PriorityButton />
           <SettingsMenu />
-          {/* <EVMWallet />  don't need currently yet*/}
           <SolWallet />
         </Flex>
       </HStack>
@@ -145,50 +121,7 @@ function AppNavLayout({
         {children}
       </Box>
       <DisclaimerModal />
-      <Mobile>
-        <Box className="mobile_bottom_navbar" flex="none">
-          <MobileBottomNavbar />
-        </Box>
-      </Mobile>
     </Flex>
-  )
-}
-
-function RouteLink({
-  href,
-  isActive,
-  title,
-  external = false
-}: {
-  href: string
-  isActive: boolean
-  title: string | React.ReactNode
-  external?: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      shallow
-      {...(external
-        ? {
-            target: '_blank',
-            rel: 'noopener noreferrer'
-          }
-        : {})}
-    >
-      <Text
-        as="span"
-        textColor={isActive ? colors.textSecondary : colors.textTertiary}
-        fontSize="lg"
-        px={4}
-        py={2}
-        rounded="xl"
-        transition="200ms"
-        _hover={{ bg: colors.backgroundLight, color: colors.textSecondary }}
-      >
-        {title}
-      </Text>
-    </Link>
   )
 }
 
@@ -247,8 +180,6 @@ function SettingsMenuModalContent(props: { isOpen: boolean; triggerRef: React.Re
         <ModalCloseButton />
         <ModalBody>
           <SlippageToleranceSettingField />
-          <Divider />
-          <SlippageToleranceSettingField variant="liquidity" />
           <Divider />
           <VersionedTransactionSettingField />
           <Divider />

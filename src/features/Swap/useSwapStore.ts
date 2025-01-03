@@ -60,7 +60,7 @@ const initSwapState = {
 }
 
 export const useSwapStore = createStore<SwapStore>(
-  () => ({
+  (set, get) => ({
     ...initSwapState,
 
     swapTokenAct: async ({ swapResponse, wrapSol, unwrapSol = false, onCloseToast, ...txProps }) => {

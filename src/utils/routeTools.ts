@@ -7,17 +7,7 @@ import router, { useRouter } from 'next/router'
 import { ParsedUrlQuery } from 'querystring'
 import { shrinkToValue } from './shrinkToValue'
 import { shakeObjectUndefinedItems } from './objectTools'
-import { StakingPageQuery } from '@/features/Staking/Staking'
-import { PoolPageQuery } from '@/features/Pools/Pools'
-import { DecreaseLiquidityPageQuery } from '@/features/Liquidity/Decrease'
-import { IncreaseLiquidityPageQuery } from '@/features/Liquidity/Increase'
-import { PortfolioPageQuery } from '@/features/Portfolio'
 import { isClient } from '@/utils/common'
-
-type EditFarmPageQuery = {
-  farmId?: string
-  clmmId?: string
-}
 
 type SwapPageQuery = {
   coin1?: TokenInfo
@@ -33,43 +23,15 @@ export type PageRouteConfigs = {
   swap: {
     queryProps?: MayFunction<SwapPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
   }
-  'edit-farm': {
-    queryProps?: MayFunction<EditFarmPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  portfolio: {
-    queryProps?: MayFunction<PortfolioPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  staking: {
-    queryProps?: MayFunction<StakingPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  pools: {
-    queryProps?: MayFunction<PoolPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  'increase-liquidity': {
-    queryProps?: MayFunction<IncreaseLiquidityPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  'decrease-liquidity': {
-    queryProps?: MayFunction<DecreaseLiquidityPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  'create-farm': {
-    queryProps?: MayFunction<Record<string, never>, [{ currentPageQuery: ParsedUrlQuery }]>
-  }
-  'clmm-lock': {
-    queryProps?: MayFunction<PoolPageQuery, [{ currentPageQuery: ParsedUrlQuery }]>
+  moonpay: {
+    queryProps?: MayFunction<{}, []>
   }
 }
 
 const pageRoutePathnames: Record<keyof PageRouteConfigs, string> = {
   '(home)': '/',
   swap: '/swap',
-  'edit-farm': '/farms/edit',
-  portfolio: '/portfolio',
-  staking: '/staking',
-  pools: '/liquidity-pools',
-  'increase-liquidity': '/liquidity/increase',
-  'decrease-liquidity': '/liquidity/decrease',
-  'create-farm': '/liquidity/create-farm',
-  'clmm-lock': '/clmm/lock'
+  moonpay: '/moonpay'
 }
 
 export type PageRouteName = keyof PageRouteConfigs
